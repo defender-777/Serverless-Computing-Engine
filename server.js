@@ -6,10 +6,14 @@ dotenv.config();
 
 const app = express();
 
-// connect database
 connectDB();
 
+// IMPORTANT middleware
 app.use(express.json());
+
+const functionRoutes = require("./routes/functionRoutes");
+
+app.use("/api", functionRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "Server running" });
