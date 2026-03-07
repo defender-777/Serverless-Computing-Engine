@@ -12,12 +12,9 @@ const runFunctionInDocker = (functionName, event) => {
       functionName
     );
 
-    const command = `
-      docker run --rm 
-      -v ${functionDir}:/app 
-      node:18 
-      node /app/index.js '${JSON.stringify(event)}'
-    `;
+    const eventString = JSON.stringify(event).replace(/"/g, '\\"');
+
+    const command = `docker run --rm -v "${functionDir}:/app" node:18 node /app/index.js "${eventString}"`;
 
     exec(command, (error, stdout, stderr) => {
 
@@ -25,7 +22,7 @@ const runFunctionInDocker = (functionName, event) => {
         return reject(stderr || error.message);
       }
 
-      resolve(stdout);
+      resolve(stdout.trim());
 
     });
 

@@ -1,0 +1,1 @@
+const event = JSON.parse(process.argv[2]); exports.handler = async (event) => { const prices = event.prices; const avg = prices.reduce((a,b)=>a+b,0)/prices.length; const max = Math.max(...prices); const min = Math.min(...prices); return {average:avg,max,min}; }; (async()=>{ const result = await exports.handler(event); console.log(JSON.stringify(result));})();

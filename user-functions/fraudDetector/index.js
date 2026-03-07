@@ -1,0 +1,1 @@
+const event=JSON.parse(process.argv[2]); exports.handler=async(event)=>{ const tx=event.transactions; const suspicious=tx.filter(t=>t.amount>10000 || t.country!==t.homeCountry); return {totalTransactions:tx.length,suspicious:suspicious};}; (async()=>{const result=await exports.handler(event); console.log(JSON.stringify(result));})();

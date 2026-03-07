@@ -1,12 +1,15 @@
 const FunctionModel = require("../models/Function");
+const Execution = require("../models/Execution");
+
 const { saveFunctionCode } = require("../utils/fileManager");
 const { runFunctionInDocker } = require("../runner/dockerRunner");
 
 
-// =============================
+// ============================
 // Upload Function
-// =============================
+// ============================
 const uploadFunction = async (req, res) => {
+
   try {
 
     const { name, runtime, code } = req.body;
@@ -46,13 +49,18 @@ const uploadFunction = async (req, res) => {
     });
 
   }
+
 };
 
 
-// =============================
+
+// ============================
 // Execute Function
-// =============================
+// ============================
 const executeFunction = async (req, res) => {
+
+  const startTime = Date.now();
+
   try {
 
     const { functionName } = req.params;
@@ -66,14 +74,37 @@ const executeFunction = async (req, res) => {
       });
     }
 
-    // Run function inside Docker
+    // Run inside Docker
     const output = await runFunctionInDocker(functionName, event);
 
+    const parsedOutput = JSON.parse(output);
+
+    const executionTime = Date.now() - startTime;
+
+    // Store execution log
+    await Execution.create({
+      functionName,
+      status: "success",
+      executionTime,
+      output: parsedOutput
+    });
+
     res.json({
-      result: JSON.parse(output)
+      result: parsedOutput,
+      executionTime
     });
 
   } catch (error) {
+
+    const executionTime = Date.now() - startTime;
+
+    // Store failure log
+    await Execution.create({
+      functionName: req.params.functionName,
+      status: "failed",
+      executionTime,
+      output: { error: error.message }
+    });
 
     console.error("Execution Error:", error);
 
@@ -82,7 +113,9 @@ const executeFunction = async (req, res) => {
     });
 
   }
+
 };
+
 
 
 module.exports = {

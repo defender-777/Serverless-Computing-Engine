@@ -1,0 +1,1 @@
+const event=JSON.parse(process.argv[2]); function fib(n){ if(n<=1) return n; return fib(n-1)+fib(n-2);} exports.handler=async(event)=>{ const n=event.number; return {fibonacci:fib(n)};}; (async()=>{ const result=await exports.handler(event); console.log(JSON.stringify(result));})();
