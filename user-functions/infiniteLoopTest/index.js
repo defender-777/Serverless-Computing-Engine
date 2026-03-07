@@ -1,0 +1,1 @@
+const event=JSON.parse(process.argv[2]); exports.handler=async(event)=>{ while(true){} }; (async()=>{ const result=await exports.handler(event); console.log(JSON.stringify(result));})();
