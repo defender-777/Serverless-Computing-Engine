@@ -5,36 +5,32 @@ const runFunctionInDocker = (functionName, event) => {
 
   return new Promise((resolve, reject) => {
 
+    // Fix Windows path issue
     const functionDir = path.join(
       __dirname,
       "..",
       "user-functions",
       functionName
-    );
+    ).replace(/\\/g, "/");
 
-    // Escape JSON safely for shell execution
+    // Escape JSON safely
     const eventString = JSON.stringify(event).replace(/"/g, '\\"');
 
-    const command = `
-      docker run --rm \
-      --memory=128m \
-      --cpus=0.5 \
-      --pids-limit=64 \
-      -v "${functionDir}:/app" \
-      node:18 \
-      timeout 5 node /app/index.js "${eventString}"
-    `;
+    const command = `docker run --rm -v "${functionDir}:/app" node:18 node /app/index.js "${eventString}"`;
+
+    console.log("Running Docker Command:");
+    console.log(command);
 
     exec(command, (error, stdout, stderr) => {
 
       if (error) {
-
-        // Exit code 124 = timeout
-        if (error.code === 124) {
-          return reject(new Error("Function execution timed out"));
-        }
-
+        console.error("Docker Execution Error:", stderr || error.message);
         return reject(new Error(stderr || error.message));
+      }
+
+      if (!stdout) {
+        console.error("Empty Output. STDERR:", stderr);
+        return reject(new Error("No output from container"));
       }
 
       resolve(stdout.trim());
